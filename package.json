@@ -1,0 +1,44 @@
+{
+  "name": "event-driven-order-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Event-driven order workflow demonstrating transactional outbox, sagas, idempotency, optimistic locking, and dead-letter recovery.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "npm run format && npm run lint && npm run typecheck && npm run test:coverage && npm run build",
+    "dev": "tsx watch src/main.ts",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "lint": "eslint .",
+    "migrate": "tsx src/cli/migrate.ts",
+    "start": "node dist/main.js",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@fastify/swagger": "9.8.1",
+    "@fastify/swagger-ui": "6.1.1",
+    "fastify": "5.11.2",
+    "kafkajs": "2.2.4",
+    "pg": "8.22.0",
+    "pino": "10.3.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.13.3",
+    "@types/pg": "8.20.4",
+    "@vitest/coverage-v8": "4.1.10",
+    "eslint": "10.8.0",
+    "prettier": "3.9.6",
+    "tsx": "4.23.11",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.66.0",
+    "vitest": "4.1.10"
+  }
+}
