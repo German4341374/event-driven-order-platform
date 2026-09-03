@@ -4,10 +4,9 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6)
 ![Delivery](https://img.shields.io/badge/delivery-at--least--once-7C3AED)
 
-A compact event-driven order workflow built to demonstrate distributed consistency, not CRUD
-volume. It combines a Fastify API, PostgreSQL transactional outbox, Redpanda Kafka API, durable
-saga decisions, idempotent consumers, optimistic locking, dead-letter handling, and structured
-logs in one reproducible local environment.
+This small order workflow is built around distributed consistency rather than CRUD volume. A
+Fastify API, PostgreSQL outbox and Redpanda event stream make duplicate delivery, concurrent
+updates, partial failure and dead-letter recovery visible in one local environment.
 
 ## Architecture
 
@@ -92,7 +91,7 @@ smoke test.
 - Outbox retention and automated replay approval are documented future work.
 - Schema evolution uses one initial migration in this compact demonstration.
 
-## Interview talking points
+## Design questions
 
 - Why a database transaction cannot atomically commit to Kafka without another protocol.
 - How the outbox and consumer inbox produce at-least-once, duplicate-safe processing.
