@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.19
-FROM node:24.19.0-alpine3.23 AS dependencies
+FROM node:24.20.0-alpine3.23 AS dependencies
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -9,12 +9,12 @@ COPY tsconfig.json tsconfig.build.json eslint.config.js vitest.config.ts .pretti
 COPY src ./src
 RUN npm run build
 
-FROM node:24.19.0-alpine3.23 AS production-dependencies
+FROM node:24.20.0-alpine3.23 AS production-dependencies
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
-FROM node:24.19.0-alpine3.23 AS runtime
+FROM node:24.20.0-alpine3.23 AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 RUN addgroup -S app -g 10001 && adduser -S app -u 10001 -G app
