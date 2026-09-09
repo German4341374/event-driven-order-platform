@@ -4,9 +4,13 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6)
 ![Delivery](https://img.shields.io/badge/delivery-at--least--once-7C3AED)
 
-This small order workflow is built around distributed consistency rather than CRUD volume. A
-Fastify API, PostgreSQL outbox and Redpanda event stream make duplicate delivery, concurrent
-updates, partial failure and dead-letter recovery visible in one local environment.
+A small order service where you can place an order, follow its progress, and see what happens
+when payment or fulfillment fails. The demo lets you try successful orders and failure cases
+without connecting to a real shop or payment provider.
+
+The API uses Fastify, orders are stored in PostgreSQL, and workers exchange messages through
+Redpanda. The useful part is seeing what happens when a message arrives twice or a worker
+stops halfway through its work.
 
 ## Architecture
 
@@ -24,26 +28,28 @@ flowchart LR
     DB --> Outbox
 ```
 
-The key design rule is simple: a business change and its outgoing message are committed together
-in PostgreSQL. Kafka delivery is asynchronous and at least once. Consumers are idempotent by
-message ID. See [architecture and delivery semantics](docs/architecture.md).
+The order change and the message describing it are saved in the same PostgreSQL transaction.
+A worker sends the message later. It may send it more than once, so consumers remember message
+IDs and skip work they have already handled. See [how delivery works](docs/architecture.md).
 
-## Engineering features
+## Things to try
 
-- Idempotent order creation protected by a PostgreSQL advisory transaction lock.
-- Transactional outbox with concurrent `FOR UPDATE SKIP LOCKED` publishers.
-- Kafka partition ordering by order ID.
-- Durable saga commands stored through the same outbox.
-- Consumer inbox table keyed by consumer and message ID.
-- Explicit state machine and optimistic version checks.
-- Persisted order timeline and correlation/causation identifiers.
-- Bounded publisher retry and queryable dead-letter state.
-- Health probes, graceful shutdown, non-root image, read-only filesystem, and internal network.
-- Unit coverage gates plus a real Compose workflow smoke test in GitHub Actions.
+- Send the same order request twice with one idempotency key. You should get one order.
+- Follow an order through its saved timeline and look up the messages behind each step.
+- Trigger an inventory or payment failure and watch the workflow handle it.
+- Inspect the outbox: workers use `FOR UPDATE SKIP LOCKED` to share pending work.
+- Check how order IDs keep related Kafka messages in the same partition.
+- Read the consumer inbox to see which message IDs have already been processed.
+- Try an update with an old version number and see it rejected instead of overwriting newer work.
+- Inspect messages that have run out of retries in the dead-letter state.
+
+Docker runs the app as a non-root user with a read-only filesystem. Health checks and shutdown
+handling are included, and CI runs unit tests plus a Compose smoke test of the order workflow.
 
 ## Quick start
 
-Requirements: Docker Engine with Compose v2. The demonstration is fully local.
+You'll need Docker Engine with Compose v2 and Node.js 24 to run the smoke script below.
+The services run locally.
 
 ```bash
 cp .env.example .env
@@ -62,7 +68,7 @@ curl --fail-with-body -X POST http://127.0.0.1:8080/api/orders \
   -d '{"customerId":"customer-42","amountCents":4200,"simulation":"success"}'
 ```
 
-Use `inventory_failure` or `payment_failure` as `simulation` to demonstrate compensation paths.
+Set `simulation` to `inventory_failure` or `payment_failure` to try a failed order.
 
 ## Local code checks
 
